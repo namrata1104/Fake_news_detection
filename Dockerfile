@@ -12,4 +12,4 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 #EXPOSE 5000
 
-CMD uvicorn fake_news_detection.api.fast:app --host 0.0.0.0 --port $PORT
+CMD ["uvicorn", "fake_news_detection.api.fast:app", "--host", "0.0.0.0", "--port", "8000"]
