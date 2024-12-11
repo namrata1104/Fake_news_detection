@@ -5,10 +5,10 @@ from pathlib import Path
 from colorama import Fore, Style
 from dateutil.parser import parse
 
-from fnd.params import *
-from fnd.ml_logic.data import get_data_with_cache, clean_data, load_data_to_bq
+from params import *
+from fake_news_detection.ml_logic.data import get_data_with_cache, clean_data, load_data_to_bq
 #from fnd.ml_logic.model import compile_model, train_model, evaluate_model
-from fnd.ml_logic.preprocessor import preprocess_features
+from fake_news_detection.ml_logic.preprocessor import preprocess_features
 #from fnd.ml_logic.registry import load_model, save_model, save_results
 #from fnd.ml_logic.registry import mlflow_run, mlflow_transition_model
 
@@ -30,8 +30,8 @@ def preprocess() -> None:
     df = get_data_with_cache(query = query, gcp_project = {GCP_PROJECT},
                                 cache_path = df_query_cache_path, data_has_header = True)
 
-    #TODO romove this line before pushing in master
-    df = df.head(55000)
+    # can be used to reduce runing time
+    #df = df.head(20)
 
     # cleaning data
     df = clean_data(df)
@@ -88,6 +88,3 @@ def pred(X_pred: pd.DataFrame = None) -> np.ndarray:
 
     print("\n✅ prediction done: ", y_pred, y_pred.shape, "\n")
     return y_pred
-
-
-df = preprocess()

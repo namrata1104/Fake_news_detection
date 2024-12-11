@@ -8,7 +8,7 @@ from google.api_core.exceptions import NotFound
 from colorama import Fore, Style
 from pathlib import Path
 
-from fnd.params import *
+from params import *
 
 def basic_cleaning(df):
     # stripping:
