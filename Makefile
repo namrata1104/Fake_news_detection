@@ -17,3 +17,7 @@ docker_interactive:
 
 docker_deploy:
 	gcloud run deploy --image ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GAR_REPO}/${GAR_IMAGE}:prod --memory ${GAR_MEMORY} --region ${GCP_REGION}
+
+
+run_api:
+	uvicorn fake_news_detection.api.fast:app --reload
