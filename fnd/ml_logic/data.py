@@ -4,28 +4,29 @@ import string
 import time
 
 from google.cloud import bigquery
+from google.api_core.exceptions import NotFound
 from colorama import Fore, Style
 from pathlib import Path
 
 from fnd.params import *
 
-def basic_cleaning(data):
+def basic_cleaning(df):
     # stripping:
-    data['text'] = data['text'].str.strip()
+    df['text'] = df['text'].str.strip()
 
     # tolower:
-    data['text'] = data['text'].str.lower()
+    df['text'] = df['text'].str.lower()
 
     # digit: Remove digits from each row of the ‘text’ column
-    data['text'] = data['text'].apply(lambda x: ''.join(char for char in x if not char.isdigit()))
+    df['text'] = df['text'].apply(lambda x: ''.join(char for char in x if not char.isdigit())).astype('string')
 
     # punctuation: Remove all punctuation marks from the ‘text’ column
-    data['text'] = data['text'].str.replace(r'[{}]'.format(re.escape(string.punctuation)), '', regex=True)
+    df['text'] = df['text'].str.replace(r'[{}]'.format(re.escape(string.punctuation)), '', regex=True)
 
     # delete html-tags
-    data['text'] = data['text'].apply(lambda x: re.sub('<[^<]+?>', '', x))
+    df['text'] = df['text'].apply(lambda x: re.sub('<[^<]+?>', '', x)).astype('string')
 
-    return data['text']
+    return df
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
 
@@ -45,7 +46,6 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     ##########################################################
     # Compressing datatypes: raw_data by setting types to DTYPES_RAW
     df = df.astype(DTYPES_RAW)
-
     ##########################################################
     #        Handling missing and redundant Data             #
     ##########################################################
@@ -59,7 +59,6 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
 
     # Remove buggy transactions
     df.drop_duplicates(inplace=True)
-
     ##########################################################
     #                     check Balancing                    #
     ##########################################################
@@ -80,14 +79,13 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     for col, percentage in formatted_nan_percentage.items():
         print(f"{col}: {percentage}")
     # Remove buggy transactions
-    df.drop_duplicates(inplace=True)
     df.dropna(how='any', axis=0, inplace=True)
-
     ##########################################################
     #                    basic cleaning                      #
     ##########################################################
     s = time.time()
-    df['text'] = basic_cleaning(df['text'])
+    df = basic_cleaning(df)
+    print(df.info())
     time_to_clean = time.time() - s
     print('Time for basic cleaning {:.2f} s'.format(time_to_clean))
 
@@ -98,7 +96,7 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
 def get_data_with_cache(
         gcp_project: str = {GCP_PROJECT},
         query: str = "",
-        cache_path: Path = Path("../raw_data/WELFake_Dataset.csv"),
+        cache_path: Path = "",
         data_has_header: bool = True
     ) -> pd.DataFrame:
     """
@@ -108,9 +106,13 @@ def get_data_with_cache(
     if cache_path.is_file():
         print(Fore.BLUE + "\nLoad data from local CSV..." + Style.RESET_ALL)
         df = pd.read_csv(cache_path, header='infer' if data_has_header else None)
-    else: # Block not used yet
+
+        # load raw data to bq
+        load_data_to_bq(df, gcp_project=GCP_PROJECT, bq_dataset=BQ_DATASET, table=f'{DATA_RAW_NAME}', truncate=True)
+
+    else:
         print(Fore.BLUE + "\nLoad data from BigQuery server..." + Style.RESET_ALL)
-        client = bigquery.Client(project=gcp_project)
+        client = bigquery.Client(project=GCP_PROJECT, location=BQ_REGION)
         query_job = client.query(query)
         result = query_job.result()
         df = result.to_dataframe()
@@ -149,9 +151,20 @@ def load_data_to_bq(
 
     # TODO: simplify this solution if possible, but students may very well choose another way to do it
     # We don't test directly against their own BQ tables, but only the result of their query
-    data.columns = [f"_{column}" if not str(column)[0].isalpha() and not str(column)[0] == "_" else str(column) for column in data.columns]
+    #data.columns = [f"_{column}" if not str(column)[0].isalpha() and not str(column)[0] == "_" else str(column) for column in data.columns]
 
-    client = bigquery.Client()
+    client = bigquery.Client(project=GCP_PROJECT, location=BQ_REGION)
+    # Check if the dataset exists
+    try:
+        # Attempt to load the dataset
+        dataset = client.get_dataset(f"{GCP_PROJECT}.{BQ_DATASET}")
+    except NotFound:
+        # If the dataset is not found, create it
+        print(f"Dataset {BQ_DATASET} not found. Creating it...")
+        dataset = bigquery.Dataset(f"{GCP_PROJECT}.{BQ_DATASET}")
+        dataset = client.create_dataset(dataset)
+        wait_for_dataset(client)
+        print(f"Dataset {BQ_DATASET} has been created.")
 
     # Define write mode and schema
     write_mode = "WRITE_TRUNCATE" if truncate else "WRITE_APPEND"
@@ -164,3 +177,17 @@ def load_data_to_bq(
     result = job.result()  # wait for the job to complete
 
     print(f"✅ Data saved to bigquery, with shape {data.shape}")
+
+# Function to wait until the dataset exists
+def wait_for_dataset(client, timeout=6):
+    """Wait until the dataset exists, or timeout after a given period."""
+    start_time = time.time()
+    while True:
+        try:
+            client.get_dataset(BQ_DATASET)
+            print(f"Dataset {BQ_DATASET} is now available.")
+            break
+        except NotFound:
+            if time.time() - start_time > timeout:
+                raise TimeoutError(f"Dataset {BQ_DATASET} not available after {timeout} seconds.")
+            time.sleep(2)  # Check every 2 seconds

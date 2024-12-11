@@ -7,10 +7,10 @@ from dateutil.parser import parse
 
 from fnd.params import *
 from fnd.ml_logic.data import get_data_with_cache, clean_data, load_data_to_bq
-from fnd.ml_logic.model import initialize_model, compile_model, train_model, evaluate_model
+#from fnd.ml_logic.model import compile_model, train_model, evaluate_model
 from fnd.ml_logic.preprocessor import preprocess_features
-from fnd.ml_logic.registry import load_model, save_model, save_results
-from fnd.ml_logic.registry import mlflow_run, mlflow_transition_model
+#from fnd.ml_logic.registry import load_model, save_model, save_results
+#from fnd.ml_logic.registry import mlflow_run, mlflow_transition_model
 
 def preprocess() -> None:
     """
@@ -23,36 +23,41 @@ def preprocess() -> None:
     print(Fore.MAGENTA + "\n ⭐️ Use case: preprocess" + Style.RESET_ALL)
 
     # Query raw data from BigQuery using `get_data_with_cache`
-    query = f"""
-        SELECT {",".join(COLUMN_NAMES_RAW)}
-        FROM `{GCP_PROJECT_WAGON}`.{BQ_DATASET}.raw_{DATA_SIZE}
-        """
+    query = f"""SELECT {",".join(COLUMN_NAMES_RAW)} FROM {GCP_PROJECT}.{BQ_DATASET}.{DATA_RAW_NAME}"""
 
     # Retrieve data using `get_data_with_cache`
-    data_query_cache_path = Path(LOCAL_DATA_PATH).joinpath("data_raw", f"{DATA_FILENAME}.csv")
-    data = get_data_with_cache(
-        query=query,
-        gcp_project= {GCP_PROJECT},
-        cache_path=data_query_cache_path,
-        data_has_header=True
-    )
+    df_query_cache_path = Path(LOCAL_DATA_PATH).joinpath(f"{DATA_RAW_NAME}.csv")
+    df = get_data_with_cache(query = query, gcp_project = {GCP_PROJECT},
+                                cache_path = df_query_cache_path, data_has_header = True)
+
+    #TODO romove this line before pushing in master
+    df = df.head(55000)
 
     # cleaning data
-    data = clean_data(data)
+    df = clean_data(df)
 
-    X = data['text']
-    y = data['label']
-    X_processed = preprocess_features(X)
+    X = df.drop('label', axis=1)
+    y = df['label']
+
+    X_processed = preprocess_features(X['text'])
 
     # Load a DataFrame onto BigQuery containing [pickup_datetime, X_processed, y]
     # using data.load_data_to_bq()
-    data_processed = pd.DataFrame(np.concatenate((X_processed, y), axis=1))
+    X_processed = X_processed.to_numpy().reshape(-1, 1)  # Form wird zu (100, 1)
+    y = y.to_numpy().reshape(-1, 1)  # Form wird ebenfalls zu (100, 1)
+
+    data_processed = pd.DataFrame(np.concatenate((X_processed, y), axis=1), columns=COLUMN_NAMES_RAW)
+
+    # Store as CSV localy if at least one valid line is processed
+    if data_processed.shape[0] > 1:
+        cache_path = Path(LOCAL_DATA_PATH).joinpath(f"{DATA_PROCESSED_NAME}.csv")
+        df.to_csv(cache_path, header=True, index=False)
 
     load_data_to_bq(
         data_processed,
         gcp_project=GCP_PROJECT,
         bq_dataset=BQ_DATASET,
-        table=f'processed_{DATA_SIZE}',
+        table=f'{DATA_PROCESSED_NAME}',
         truncate=True
     )
 
@@ -85,4 +90,4 @@ def pred(X_pred: pd.DataFrame = None) -> np.ndarray:
     return y_pred
 
 
-preprocess()
+df = preprocess()

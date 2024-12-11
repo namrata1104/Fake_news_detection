@@ -20,7 +20,7 @@ def lemmatize_text(X):
     return [lemmatizer.lemmatize(word, pos="n") for word in verb_lemmatized]
 
 # NLP-Cleaning funktion
-def nlp_cleaning(X):
+def nlp_cleaning(X: pd.Series) -> pd.DataFrame:
     # Tokenisation
     X = X.apply(word_tokenize)
     # Remove stop words
@@ -30,7 +30,7 @@ def nlp_cleaning(X):
     # Combine words into a string
     return X.apply(lambda x: ' '.join(x))
 
-def preprocess_features(X: pd.DataFrame) -> np.ndarray:
+def preprocess_features(X: pd.Series) -> pd.DataFrame:
     # start preprocessing data for nlp
     s = time.time()
     X = nlp_cleaning(X)
