@@ -18,3 +18,5 @@ uvicorn==0.20.0
 #joblib==1.2.0
 #For Word Embeddings (Optional)
 #gensim==4.2.0
+streamlit>=1.0
+echo "joblib" >> requirements.txt
