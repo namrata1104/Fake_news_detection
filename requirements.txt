@@ -3,20 +3,20 @@
 #pandas==1.5.3
 #Machine Learning Libraries
 #scikit-learn==1.1.3
-#Natural Language Processing Libraries
+#N#atural Language Processing Libraries
 #nltk==3.7
 #spacy==3.4.4
-# eep Learning Libraries (if needed)
+#deep Learning Libraries (if needed)
 #tensorflow==2.10.1
 #torch==1.13.1
-# API Development
-fastapi==0.89.1
-uvicorn==0.20.0
+#API Development
+#fastapi==0.89.1
+#uvicorn==0.20.0
 #Other Utilities
 #matplotlib==3.6.2
 #seaborn==0.12.2
 #joblib==1.2.0
 #For Word Embeddings (Optional)
 #gensim==4.2.0
-streamlit>=1.0
-echo "joblib" >> requirements.txt
+#streamlit>=1.0
+#echo "joblib" >> requirements.txt
