@@ -6,10 +6,10 @@ from colorama import Fore, Style
 from dateutil.parser import parse
 
 from params import *
-from fake_news_detection.ml_logic.data import get_data_with_cache, clean_data, load_data_to_bq
-from fake_news_detection.ml_logic.model import train_basic_model, initialize_base_model
-from fake_news_detection.ml_logic.preprocessor import preprocess_features
-from fake_news_detection.ml_logic.registry import load_base_model, save_model, save_results
+from fake_news_detection.ml_logic.data import get_data_with_cache, load_data_to_bq
+from fake_news_detection.ml_logic.model import initialize_base_model, train_basic_model
+from fake_news_detection.ml_logic.preprocessor import prepare_basic_clean_data, preprocess_features
+from fake_news_detection.ml_logic.registry import save_base_model, save_model_results, load_base_model
 
 def preprocess() -> None:
     """
@@ -30,10 +30,10 @@ def preprocess() -> None:
                                 cache_path = df_query_cache_path, data_has_header = True)
 
     # can be used to reduce runing time
-    #df = df.head(20)
+    df = df.head(20)
 
     # cleaning data
-    df = clean_data(df)
+    df = prepare_basic_clean_data(df)
 
     X = df.drop('label', axis=1)
     y = df['label']
@@ -51,6 +51,7 @@ def preprocess() -> None:
     if data_processed.shape[0] > 1:
         cache_path = Path(LOCAL_DATA_PATH).joinpath(f"{DATA_PROCESSED_NAME}.csv")
         df.to_csv(cache_path, header=True, index=False)
+        print("✅ preprocessed data locally stored \n")
 
     load_data_to_bq(
         data_processed,
@@ -61,28 +62,6 @@ def preprocess() -> None:
     )
 
     print("✅ preprocess() done \n")
-
-def pred_base_model(X_pred: pd.DataFrame = None) -> np.ndarray:
-    """
-    Make a prediction using the latest trained model
-    """
-
-    print("\n⭐️ Use case: predict")
-
-    if X_pred is None:
-        X_pred = pd.DataFrame(dict(
-        dropoff_latitude=[40.769802],
-        passenger_count=[1],
-    ))
-
-    model_NB = load_base_model()
-    assert model_NB is not None
-
-    X_processed = preprocess_features(X_pred)
-    y_pred = model_NB.predict(X_processed)
-
-    print("\n✅ prediction done: ", y_pred, y_pred.shape, "\n")
-    return y_pred
 
 def train_base_model(
         split_ratio: float = 0.02 # 0.02 represents ~ 1 month of validation data on a 2009-2015 train set
@@ -136,9 +115,6 @@ def train_base_model(
     if model_NB is None:
         model_NB = initialize_base_model(input_shape=X_train_processed.shape[1:])
 
-    #TODO: QUESION is compiling the model important for baseline
-    #base_model = compile_base_model(base_model, learning_rate=learning_rate)
-
     model_NB = train_basic_model(model_NB, X_train_processed, y_train)
 
     params = dict(
@@ -147,16 +123,33 @@ def train_base_model(
         row_count=len(X_train_processed),
     )
 
-    # Save results on the hard drive using taxifare.ml_logic.registry
-    # print(f"✅ Model trained on {len(X)} rows with min val MAE: {round(np.min(history.history['val_mae']), 2)}")
-    save_results(params=params, metrics=dict(mae=val_mae))
+    #save_model_results(params=params, metrics=dict(mae=val_mae))
 
-    # Save model weight on the hard drive (and optionally on GCS too!)
-    save_model(model=model_NB)
+    # by base bas model we don't habe a history to store
+    save_base_model(model=model_NB)
 
     print("✅ train() base model done \n")
 
-    return val_mae
+def pred_base_model(X_pred: pd.DataFrame = None) -> np.ndarray:
+    """
+    Make a prediction using the latest trained model
+    """
 
+    print("\n⭐️ Use case: predict")
+
+    if X_pred is None:
+        X_pred = pd.DataFrame(dict(
+        dropoff_latitude=[40.769802],
+        passenger_count=[1],
+    ))
+
+    model_NB = load_base_model()
+    assert model_NB is not None
+
+    X_processed = preprocess_features(X_pred)
+    y_pred = model_NB.predict(X_processed)
+
+    print("\n✅ prediction done: ", y_pred, y_pred.shape, "\n")
+    return y_pred
 
 preprocess()
