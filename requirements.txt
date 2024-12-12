@@ -2,7 +2,7 @@
 # pip install -r requirements.txt
 
 # Core Python Libraries
-# numpy==1.23.5
+numpy==1.23.5
 # pandas==1.5.3
 
 # Machine Learning Libraries
