@@ -3,7 +3,7 @@ import os
 import time
 import pickle
 from tensorflow import keras
-
+import joblib
 from params import *
 from colorama import Fore, Style
 
@@ -16,7 +16,8 @@ def save_base_model(model: keras.Model = None) -> None:
 
     # Save model locally
     model_path = os.path.join(LOCAL_REGISTRY_PATH, "models", f"{timestamp}.h5")
-    model.save(model_path)
+    joblib.dump(model, model_path)
+
 
     print("✅ Model saved locally")
     return None
@@ -65,7 +66,7 @@ def load_base_model(stage="local") -> keras.Model:
 
         print(Fore.BLUE + f"\nLoad latest model from disk..." + Style.RESET_ALL)
 
-        latest_model = keras.models.load_model(most_recent_model_path_on_disk)
+        latest_model = model = joblib.load(most_recent_model_path_on_disk)
 
         print("✅ Model loaded from local disk")
 

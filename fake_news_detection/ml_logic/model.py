@@ -1,6 +1,6 @@
 import numpy as np
 import time
-
+from params import *
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.metrics import classification_report,confusion_matrix
@@ -82,8 +82,14 @@ def train_basic_model(
     Fit the model and return fitted_model
     """
     print(Fore.BLUE + "\nTraining base model..." + Style.RESET_ALL)
+    X_train_processed = X_train_processed.astype(str).flatten().tolist()
+    print("✅ X_train_processed converted and validated:", X_train_processed[:2])  # Zeigt die ersten 10 Labels
 
-    history = model_NB.fit(X_train_processed, y_train)
+    # Validierung und Konvertierung von y_train
+    y_train = np.array(y_train).astype(bool).flatten()
+    print("✅ y_train converted and validated:", y_train[:2])  # Zeigt die ersten 10 Labels
+
+    model_NB.fit(X_train_processed, y_train)
 
     # Access to Modell and the Vectorizer after Fit
     # 1. Access to Naive Bayes Modell (MultinomialNB)
