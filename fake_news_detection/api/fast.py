@@ -17,5 +17,5 @@ async def root():
 async def predict(text):
     model=None
     #model.predict(process_data)
-    # Add prediction logic here
+    #Add prediction logic here
     return {"prediction": "fake"}  # Example response
