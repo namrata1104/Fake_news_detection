@@ -23,7 +23,7 @@ def get_data_with_cache(
         df = pd.read_csv(cache_path, header='infer' if data_has_header else None)
 
         # load raw data to bq
-        _upload_data_to_bq(df, gcp_project=GCP_PROJECT, bq_dataset=BQ_DATASET, table=f'{DATA_RAW_NAME}', truncate=True)
+        upload_data_to_bq(df, gcp_project=GCP_PROJECT, bq_dataset=BQ_DATASET, table=f'{DATA_RAW_NAME}', truncate=True)
         print(f"✅ Data loaded from disk and stored in BigQuery DB, with shape {df.shape}")
 
     else:
@@ -42,7 +42,7 @@ def get_data_with_cache(
 
     return df
 
-def _upload_data_to_bq(
+def upload_data_to_bq(
         data: pd.DataFrame,
         gcp_project:str,
         bq_dataset:str,
