@@ -5,7 +5,7 @@ from pathlib import Path
 from colorama import Fore, Style
 from dateutil.parser import parse
 
-from params import *
+from fake_news_detection.params import *
 from fake_news_detection.ml_logic.model import initialize_base_model, get_score_base_model, train_basic_model
 from fake_news_detection.ml_logic.preprocessor import prepare_basic_clean_data, basic_cleaning, preprocess_feature
 from fake_news_detection.ml_logic.registry import save_base_model, load_base_model, save_model_results, load_base_metrics
@@ -176,6 +176,6 @@ def pred_base_model(text: str) -> tuple:
     return (y_pred[0], accuracy)
 
 
-#preprocess()
+preprocess()
 #train_base_model()
 #pred_base_model('i am not a fake news')
