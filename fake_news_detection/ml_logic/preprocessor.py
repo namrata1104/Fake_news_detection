@@ -41,7 +41,7 @@ def prepare_basic_clean_data(df: pd.DataFrame) -> pd.DataFrame:
     # Remove buggy transactions
     df.drop_duplicates(inplace=True)
     ##########################################################
-    #                     check Balancing                    #
+    #                     Balancing Check                    #
     ##########################################################
     # Calculate percentage of NaN values in each column
     # Balancing: Calculation of the distribution in per cent
@@ -64,8 +64,9 @@ def prepare_basic_clean_data(df: pd.DataFrame) -> pd.DataFrame:
     ##########################################################
     #                    basic cleaning                      #
     ##########################################################
+    print('basic cleaning start ...')
     s = time.time()
-    df = _basic_cleaning(df)
+    df['text'] = df['text'].apply(basic_cleaning)
     print(df.info())
     time_to_clean = time.time() - s
     print('Time for basic cleaning {:.2f} s'.format(time_to_clean))
@@ -74,41 +75,40 @@ def prepare_basic_clean_data(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def preprocess_features(X: pd.Series) -> pd.DataFrame:
-    # start preprocessing data for nlp
-    s = time.time()
-    X = _nlp_cleaning(X)
-    print(f"Time to nlp clean: {time.time() - s:.2f} seconds")
-    return X
+def preprocess_feature(text: str) -> str:
 
-def _basic_cleaning(df):
+    # Tokenisation
+    tokens = word_tokenize(text)
+
+    # Remove stop words
+    tokens = _delete_stop_words(tokens)
+
+    # Lemmatisation
+    tokens = _lemmatize_text(tokens)
+
+    # Combine words into a string
+    processed_text = ' '.join(tokens)
+
+    return processed_text
+
+def basic_cleaning(text: str) -> str:
     # stripping:
-    df['text'] = df['text'].str.strip()
+    text = text.strip()
 
     # tolower:
-    df['text'] = df['text'].str.lower()
+    text = text.lower()
 
-    # digit: Remove digits from each row of the ‘text’ column
-    df['text'] = df['text'].apply(lambda x: ''.join(char for char in x if not char.isdigit())).astype('string')
+    # digit: Remove digits
+    text = ''.join(char for char in text if not char.isdigit())
 
-    # punctuation: Remove all punctuation marks from the ‘text’ column
-    df['text'] = df['text'].str.replace(r'[{}]'.format(re.escape(string.punctuation)), '', regex=True)
+    # punctuation: Remove all punctuation marks
+    text = re.sub(r'[{}]'.format(re.escape(string.punctuation)), '', text)
 
     # delete html-tags
-    df['text'] = df['text'].apply(lambda x: re.sub('<[^<]+?>', '', x)).astype('string')
+    text = re.sub('<[^<]+?>', '', text)
 
-    return df
+    return text
 
-# NLP-Cleaning funktion
-def _nlp_cleaning(X: pd.Series) -> pd.DataFrame:
-    # Tokenisation
-    X = X.apply(word_tokenize)
-    # Remove stop words
-    X = X.apply(_delete_stop_words)
-    # Lemmatisation
-    X = X.apply(_lemmatize_text)
-    # Combine words into a string
-    return X.apply(lambda x: ' '.join(x))
 
 # Tokenise and remove stop words
 def _delete_stop_words(X):
