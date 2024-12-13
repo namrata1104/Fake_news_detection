@@ -21,3 +21,9 @@ docker_deploy:
 
 run_api:
 	uvicorn fake_news_detection.api.fast:app --reload
+
+to start the backend excecute:
+uvicorn fake_news_detection.api.fast:app --reload
+
+to start the frontend change to the frontend folder and execute this command:
+streamlit run app.py
