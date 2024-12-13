@@ -83,7 +83,7 @@ def train_basic_model(
     """
     print(Fore.BLUE + "\nTraining base model..." + Style.RESET_ALL)
     X_train_processed = X_train_processed.astype(str).flatten().tolist()
-    print("✅ X_train_processed converted and validated:", X_train_processed[:2])  # Zeigt die ersten 10 Labels
+    print("✅ X_train_processed converted and validated:")
 
     # Validierung und Konvertierung von y_train
     y_train = np.array(y_train).astype(bool).flatten()
@@ -105,3 +105,17 @@ def train_basic_model(
     print(vectoriser.get_feature_names_out())  # Lists all words in the vocabulary
     print(Fore.BLUE + "\n✅ base model trained !" + Style.RESET_ALL)
     return model_NB
+
+def get_score_base_model(model_NB: Model,
+        X_test_processed: np.ndarray,
+        y_test: np.ndarray):
+    # calculates the accuracy of the model on the test set
+
+    X_test_processed = X_test_processed.astype(str).flatten().tolist()
+    print("✅ X_train_processed converted and validated:", X_test_processed[:2])
+
+    # Validierung und Konvertierung von y_train
+    y_test = np.array(y_test).astype(bool).flatten()
+
+    test_score = model_NB.score(X_test_processed, y_test)
+    return test_score

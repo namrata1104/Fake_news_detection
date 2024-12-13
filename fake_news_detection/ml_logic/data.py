@@ -49,7 +49,8 @@ def upload_data_to_bq(
         table: str,
         truncate: bool
     ) -> None:
-
+    # TODO delete return
+    return
     """
     - Save the DataFrame to BigQuery
     - Empty the table beforehand if `truncate` is True, append otherwise

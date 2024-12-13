@@ -64,6 +64,7 @@ def prepare_basic_clean_data(df: pd.DataFrame) -> pd.DataFrame:
     ##########################################################
     #                    basic cleaning                      #
     ##########################################################
+    print('basic cleaning start ...')
     s = time.time()
     df['text'] = df['text'].apply(basic_cleaning)
     print(df.info())

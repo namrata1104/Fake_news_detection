@@ -35,15 +35,14 @@ def save_model_results(params: dict, metrics: dict) -> None:
         params_path = os.path.join(LOCAL_REGISTRY_PATH, "params", timestamp + ".pickle")
         with open(params_path, "wb") as file:
             pickle.dump(params, file)
-    print("✅ Params saved locally")
+        print("✅ Params saved locally")
 
     # Save metrics locally
-    if metrics is not None:
+    if  metrics is not None:
         metrics_path = os.path.join(LOCAL_REGISTRY_PATH, "metrics", timestamp + ".pickle")
         with open(metrics_path, "wb") as file:
             pickle.dump(metrics, file)
-
-    print("✅ Results saved locally")
+        print("✅ Results saved locally")
 
 def load_base_model(stage="local") -> keras.Model:
     """
@@ -71,5 +70,35 @@ def load_base_model(stage="local") -> keras.Model:
         print("✅ Model loaded from local disk")
 
         return latest_model
+    else:
+        return None
+
+def load_base_metrics(stage="local") -> keras.Model:
+    """
+    Return a saved metrics:
+    - locally (latest one in alphabetical order)
+    Return None (but do not Raise) if no model is found
+
+    """
+    if MODEL_TARGET == "local":
+        print(Fore.BLUE + f"\nLoad latest base metrics from local registry..." + Style.RESET_ALL)
+
+        # Get the latest base_score version name by the timestamp on disk
+        local_metrics_directory = os.path.join(LOCAL_REGISTRY_PATH, "metrics")
+        local_metrics_paths = glob.glob(f"{local_metrics_directory}/*")
+
+        if not local_metrics_paths:
+            return None
+
+        most_recent_metrics_path_on_disk = sorted(local_metrics_paths)[-1]
+
+        print(Fore.BLUE + f"\nLoad latest base metrics from disk..." + Style.RESET_ALL)
+
+        with open(most_recent_metrics_path_on_disk, "rb") as file:
+            latest_metrics_score = pickle.load(file)
+
+        print("✅ base metrics loaded from local disk")
+
+        return latest_metrics_score
     else:
         return None
