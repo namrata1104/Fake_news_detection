@@ -2,11 +2,11 @@
 # pip install -r requirements.txt
 
 # Core Python Libraries
-# numpy==1.23.5
-# pandas==1.5.3
+numpy==1.23.5
+pandas==1.5.3
 
-# Machine Learning Libraries
-# scikit-learn==1.1.3
+#Machine Learning Libraries
+scikit-learn==1.3.1
 
 # Natural Language Processing Libraries
 nltk==3.7
@@ -18,15 +18,21 @@ tensorflow-macos==2.10.0; sys_platform == 'darwin' and 'ARM' in platform_version
 tensorflow==2.10.0; sys_platform == 'darwin' and 'ARM' not in platform_version # Mac Intel chips
 tensorflow==2.10.0; sys_platform != 'darwin' # Windows & Ubuntu Intel chips
 
+# eep Learning Libraries (if needed)
+# Trick to install the version of Tensorflow depending on your processor: darwin == Mac, ARM == M1
+tensorflow-macos==2.10.0; sys_platform == 'darwin' and 'ARM' in platform_version # Mac M-chips
+tensorflow==2.10.0; sys_platform == 'darwin' and 'ARM' not in platform_version # Mac Intel chips
+tensorflow==2.10.0; sys_platform != 'darwin' # Windows & Ubuntu Intel chips
+#torch==1.13.1
 
 # API Development
 fastapi==0.89.1
 uvicorn==0.20.0
 
-# Other Utilities
-# matplotlib==3.6.2
-# seaborn==0.12.2
-# joblib==1.2.0
+#Other Utilities
+matplotlib==3.6.2
+seaborn==0.12.2
+#joblib==1.2.0
 
 # For Word Embeddings (Optional)
 # gensim==4.2.0
@@ -37,7 +43,7 @@ google-cloud-bigquery==3.18.0
 google-cloud-storage==2.14.0
 google-api-core==2.8.2
 googleapis-common-protos==1.56.4
-protobuf<3.20,>=3.9.2
+protobuf==3.19.6
 
 colorama
 

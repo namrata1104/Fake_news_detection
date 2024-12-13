@@ -6,10 +6,10 @@ from colorama import Fore, Style
 from dateutil.parser import parse
 
 from params import *
-from fake_news_detection.ml_logic.data import get_data_with_cache, load_data_to_bq
 from fake_news_detection.ml_logic.model import initialize_base_model, train_basic_model
 from fake_news_detection.ml_logic.preprocessor import prepare_basic_clean_data, preprocess_features
-from fake_news_detection.ml_logic.registry import save_base_model, save_model_results, load_base_model
+from fake_news_detection.ml_logic.registry import save_base_model, load_base_model
+from fake_news_detection.ml_logic.data import get_data_with_cache, upload_data_to_bq
 
 def preprocess() -> None:
     """
@@ -53,7 +53,7 @@ def preprocess() -> None:
         df.to_csv(cache_path, header=True, index=False)
         print("✅ preprocessed data locally stored \n")
 
-    load_data_to_bq(
+    upload_data_to_bq(
         data_processed,
         gcp_project=GCP_PROJECT,
         bq_dataset=BQ_DATASET,
