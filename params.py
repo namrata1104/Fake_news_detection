@@ -22,4 +22,9 @@ DTYPES_RAW = {
     "text": "string",
     "label": "bool",
 }
+
+DTYPES_PROCESSED = {
+    "text": "string",
+    "label": "bool",
+}
 ################## VALIDATIONS #################
