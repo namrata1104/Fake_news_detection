@@ -19,6 +19,7 @@ async def predict(request: TextRequest):
     and return the result and accuracy as response.
     """
     # Call pred_base_model to get the prediction and accuracy
+
     y_pred, accuracy = pred_base_model(request.text)
 
     # Create the response dictionary
