@@ -3,7 +3,7 @@
 
 # Core Python Libraries
 numpy==1.23.5
-# pandas==1.5.3
+pandas==1.5.3
 
 #Machine Learning Libraries
 scikit-learn==1.3.1
