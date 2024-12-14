@@ -6,7 +6,7 @@ from google.api_core.exceptions import NotFound
 from colorama import Fore, Style
 from pathlib import Path
 
-from params import *
+from fake_news_detection.params import *
 
 def get_data_with_cache(
         gcp_project: str = {GCP_PROJECT},
