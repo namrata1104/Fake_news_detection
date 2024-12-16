@@ -30,7 +30,7 @@ def preprocess() -> None:
                                 cache_path = df_query_cache_path, data_has_header = True)
 
     # can be used to reduce runing time
-    df = df.head(int(DATA_SIZE))
+    df = df.head(int(DATA_SIZE))                              ### comment this line to use the full dataset
     print(df.shape)
 
     # cleaning data
@@ -176,6 +176,6 @@ def pred_base_model(text: str) -> tuple:
     return (y_pred[0], accuracy)
 
 
-preprocess()
-#train_base_model()
-#pred_base_model('i am not a fake news')
+# preprocess()
+# train_base_model()
+pred_base_model('i am not a fake news')

@@ -6,7 +6,7 @@ from google.api_core.exceptions import NotFound
 from colorama import Fore, Style
 from pathlib import Path
 
-from params import *
+from fake_news_detection.params import *
 
 def get_data_with_cache(
         gcp_project: str = {GCP_PROJECT},
@@ -50,13 +50,13 @@ def upload_data_to_bq(
         truncate: bool
     ) -> None:
     # TODO delete return
-    return
+
     """
     - Save the DataFrame to BigQuery
     - Empty the table beforehand if `truncate` is True, append otherwise
     """
     assert isinstance(data, pd.DataFrame)
-    full_table_name = f"{gcp_project}.{bq_dataset}.{table}"
+    full_table_name = f"{GCP_PROJECT}.{BQ_DATASET}.{table}"
     print(Fore.BLUE + f"\nSave data to BigQuery @ {full_table_name}...:" + Style.RESET_ALL)
 
     # Load data into full_table_name
