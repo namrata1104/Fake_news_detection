@@ -4,7 +4,7 @@ import time
 import pickle
 from tensorflow import keras
 import joblib
-from params import *
+from fake_news_detection.params import *
 from colorama import Fore, Style
 
 

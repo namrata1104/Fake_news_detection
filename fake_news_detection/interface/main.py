@@ -146,10 +146,6 @@ def train_base_model(
 
     return model_NB
 
-
-
-from sklearn.metrics import accuracy_score
-
 def pred_base_model(text: str) -> tuple:
     """
     Make a prediction using the latest trained model and return the prediction and accuracy.
@@ -176,6 +172,6 @@ def pred_base_model(text: str) -> tuple:
     return (y_pred[0], accuracy)
 
 
-preprocess()
+#preprocess()
 #train_base_model()
-#pred_base_model('i am not a fake news')
+pred_base_model('i am not a fake news')
