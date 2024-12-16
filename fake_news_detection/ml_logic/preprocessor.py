@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import re
 import string
-from params import *
+from fake_news_detection.params import *
 
 def prepare_basic_clean_data(df: pd.DataFrame) -> pd.DataFrame:
 

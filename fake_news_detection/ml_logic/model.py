@@ -1,6 +1,6 @@
 import numpy as np
 import time
-from params import *
+from fake_news_detection.params import *
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.metrics import classification_report,confusion_matrix
