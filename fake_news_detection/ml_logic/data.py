@@ -49,8 +49,6 @@ def upload_data_to_bq(
         table: str,
         truncate: bool
     ) -> None:
-    # TODO delete return
-
     """
     - Save the DataFrame to BigQuery
     - Empty the table beforehand if `truncate` is True, append otherwise
@@ -71,7 +69,7 @@ def upload_data_to_bq(
         dataset = bigquery.Dataset(f"{GCP_PROJECT}.{BQ_DATASET}")
         dataset = client.create_dataset(dataset)
         _wait_for_dataset(client)
-        print(f"Dataset {BQ_DATASET} has been created.")
+        print(f"Dataset {BQ_DATASET} was been created.")
 
     # Define write mode and schema
     write_mode = "WRITE_TRUNCATE" if truncate else "WRITE_APPEND"
@@ -98,3 +96,56 @@ def _wait_for_dataset(client, timeout=6):
             if time.time() - start_time > timeout:
                 raise TimeoutError(f"Dataset {BQ_DATASET} not available after {timeout} seconds.")
             time.sleep(2)  # Check every 2 seconds
+
+def get_processed_data():
+    # Load processed data using `get_data_with_cache` in chronological order
+    # Try it out manually on console.cloud.google.com first!
+
+    # Below, our columns are called [text, label] on BQ
+    # Query PROCESSED data from BigQuery using `get_data_with_cache`
+    query = f"""SELECT {",".join(COLUMN_NAMES_RAW)} FROM {GCP_PROJECT}.{BQ_DATASET}.{DATA_PROCESSED_NAME}"""
+
+    # Retrieve data using `get_data_with_cache`
+    data_processed_cache_path = Path(LOCAL_DATA_PATH).joinpath(f"{DATA_PROCESSED_NAME}.csv")
+    data_processed = get_data_with_cache(
+        gcp_project = GCP_PROJECT,
+        query=query,
+        cache_path=data_processed_cache_path,
+        data_has_header=True
+    )
+    return data_processed
+
+from typing import Tuple
+import pandas as pd
+import numpy as np
+
+def split_data(data: pd.DataFrame, split_ratio: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Splits and shuffles the processed data into training and testing sets.
+
+    Args:
+        data (pd.DataFrame): The processed dataset.
+        split_ratio (float): The ratio for splitting the dataset into training and testing sets (e.g., 0.2 for 20% test data).
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+            - X_train (features for training)
+            - y_train (labels for training)
+            - X_test (features for testing)
+            - y_test (labels for testing)
+    """
+
+    # Calculate the length of the training set
+    train_length = int(len(data) * (1 - split_ratio))
+
+    # Split the data into training and testing sets
+    data_train = data[:train_length]
+    data_test = data[train_length:]
+
+    # Separate features (X) and labels (y)
+    X_train = data_train[:, :-1]
+    y_train = data_train[:, -1]
+    X_test = data_test[:, :-1]
+    y_test = data_test[:, -1]
+
+    return X_train, y_train, X_test, y_test

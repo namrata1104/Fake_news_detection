@@ -8,6 +8,68 @@ import pandas as pd
 import re
 import string
 from fake_news_detection.params import *
+from fake_news_detection.ml_logic.data import get_data_with_cache, upload_data_to_bq
+from pathlib import Path
+from colorama import Fore, Style
+
+def preprocess() -> None:
+    """
+    - Query the raw dataset from Le Wagon's BigQuery dataset
+    - Cache query result as a local CSV if it doesn't exist locally
+    - Process query data
+    - Store processed data on your personal BQ (truncate existing table if it exists)
+    - No need to cache processed data as CSV (it will be cached when queried back from BQ during training)
+    """
+    print(Fore.MAGENTA + "\n ⭐️ Use case: preprocess" + Style.RESET_ALL)
+
+    # Query raw data from BigQuery using `get_data_with_cache`
+    query = f"""SELECT {",".join(COLUMN_NAMES_RAW)} FROM {GCP_PROJECT}.{BQ_DATASET}.{DATA_RAW_NAME}"""
+
+    # Retrieve data using `get_data_with_cache`
+    df_query_cache_path = Path(LOCAL_DATA_PATH).joinpath(f"{DATA_RAW_NAME}.csv")
+    df = get_data_with_cache(query = query, gcp_project = {GCP_PROJECT},
+                                cache_path = df_query_cache_path, data_has_header = True)
+
+    # can be used to reduce runing time
+    df = df.head(int(DATA_SIZE))
+    print(df.shape)
+
+    # cleaning data
+    df = prepare_basic_clean_data(df)
+
+    X = df.drop('label', axis=1)
+    y = df['label']
+
+    # start preprocessing data for nlp
+    print('preprocessing data start ...')
+    s = time.time()
+    X_processed = X['text'].apply(preprocess_feature)
+    print(f"Time to preprocessing data : {time.time() - s:.2f} seconds")
+
+    # Load a DataFrame onto BigQuery containing [pickup_datetime, X_processed, y]
+    # using data.load_data_to_bq()
+    X_processed = X_processed.to_numpy().reshape(-1, 1)  # Form wird zu (100, 1)
+
+
+    y = y.to_numpy().reshape(-1, 1)  # Form wird ebenfalls zu (100, 1)
+
+
+    data_processed = pd.DataFrame(np.concatenate((X_processed, y), axis=1), columns=COLUMN_NAMES_RAW)
+    # Store as CSV localy if at least one valid line is processed
+    if data_processed.shape[0] > 1:
+        cache_path = Path(LOCAL_DATA_PATH).joinpath(f"{DATA_PROCESSED_NAME}.csv")
+        data_processed.to_csv(cache_path, header=True, index=False)
+        print("✅ preprocessed data locally stored \n")
+
+    upload_data_to_bq(
+        data_processed,
+        gcp_project=GCP_PROJECT,
+        bq_dataset=BQ_DATASET,
+        table=f'{DATA_PROCESSED_NAME}',
+        truncate=True
+    )
+
+    print("✅ preprocess() done \n")
 
 def prepare_basic_clean_data(df: pd.DataFrame) -> pd.DataFrame:
 

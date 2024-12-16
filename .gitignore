@@ -28,7 +28,6 @@ data/
 
 # Saved models
 training_outputs/
-models/
 *.joblib
 *.h5
 
