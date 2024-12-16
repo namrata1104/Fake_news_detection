@@ -27,15 +27,14 @@ raw_data/
 data/
 
 # Saved models
-training_outputs/
-models/
-*.joblib
-*.h5
+#training_outputs/
+#*.joblib
+#*.h5
 
 # Any pickle files
-*.pickle
-*.pckl
-*.pkl
+#*.pickle
+#*.pckl
+#*.pkl
 
 # Credentials (or files with potentially credentials inside)
 .env
