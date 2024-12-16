@@ -1,5 +1,4 @@
 import os
-import numpy as np
 
 ##################  VARIABLES  ##################
 DATA_SIZE = os.environ.get("DATA_SIZE")
@@ -14,7 +13,9 @@ BQ_REGION  = os.environ.get("BQ_REGION")
 ##################  CONSTANTS  #####################
 LOCAL_DATA_PATH = os.path.join(os.path.expanduser('~'), "code", "namrata1104", "Fake_news_detection", "data")
 LOCAL_REGISTRY_PATH =  os.path.join(os.path.expanduser('~'), "code", "namrata1104", "Fake_news_detection", "training_outputs")
-
+BASELINE = 'baseline'
+RNN = 'rnn'
+LSTM = 'lstm'
 COLUMN_NAMES_RAW = ['text','label']
 
 DTYPES_RAW = {
