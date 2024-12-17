@@ -6,4 +6,10 @@ from fake_news_detection.ml_logic.registry import load_metrics
 
 #preprocess()
 #model_factory.getModel(BASELINE).train(split_ratio=0.03)
-#model_factory.getModel(BASELINE).predict('i am not a fake news')
+model_factory.getModel(BASELINE).predict('i am not a fake news')
+
+#model_factory.getModel(LSTM).train(split_ratio=0.03)
+model_factory.getModel(LSTM).predict('i am not a fake news')
+
+#model_factory.getModel(RNN).train(split_ratio=0.03)
+model_factory.getModel(RNN).predict('i am not a fake news')

@@ -3,6 +3,7 @@ import os
 import time
 import pickle
 import joblib
+import tensorflow as tf
 from fake_news_detection.params import *
 from colorama import Fore, Style
 from typing import TypeVar
@@ -30,8 +31,6 @@ def load_model(model_type: str) -> T:
     - locally (latest one in alphabetical order)
     Return None (but do not Raise) if no model is found
     """
-    print(Fore.BLUE + f"\nLoad latest model {model_type} from local registry..." + Style.RESET_ALL)
-
     # Get the latest model version name by the timestamp on disk
     local_model_directory = os.path.join(LOCAL_REGISTRY_PATH, "models", model_type)
     local_model_paths = glob.glob(f"{local_model_directory}/*")
@@ -43,7 +42,10 @@ def load_model(model_type: str) -> T:
 
     print(Fore.BLUE + f"\nLoad latest model {model_type} from disk..." + Style.RESET_ALL)
 
-    return joblib.load(most_recent_model_path_on_disk)
+    if model_type == 'baseline':
+        return joblib.load(most_recent_model_path_on_disk)
+
+    return tf.keras.models.load_model(most_recent_model_path_on_disk)
 
 
 def load_metrics(model_type: str):
