@@ -37,8 +37,8 @@ class abstract_model(Generic[M]):
             X_pred = pd.DataFrame([processed_news], columns=['text'])
             y_pred = self.model.predict(X_pred)
 
-            predict_result = abstract_model.get_proba(
-                                    y_pred, self.model.predict_proba(X_pred))
+            predict_proba = self.model.predict_proba(X_pred)
+            predict_result = abstract_model.get_proba(y_pred, predict_proba)
 
             print(f"predict_result:  {predict_result}")
 
@@ -52,7 +52,6 @@ class abstract_model(Generic[M]):
             # Get the prediction
 
             probabilities = self.model.predict(X_pred)[0]  # Assuming batch size = 1
-
             predict_result = abstract_model.get_tuple_highest_probability(probabilities)
 
             print(f"predict_result:  {predict_result}")
