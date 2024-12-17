@@ -24,24 +24,21 @@ class abstract_model(Generic[M]):
         """
         Make a prediction using the latest trained model and return the prediction and accuracy.
         """
-        print("\n⭐️ Use case: predict")
+        print(f"\n⭐️ Use case: predict {self.model_type} model")
 
         # Preprocess the input text
         processed_news = preprocess_feature(basic_cleaning(news))
 
+        # Get the prediction
+        print(Fore.BLUE + f"🚀\n start predicting {self.model_type} model start..." + Style.RESET_ALL)
+
         if self.model_type == BASELINE:
             # Convert the processed text into a DataFrame for the model
             X_pred = pd.DataFrame([processed_news], columns=['text'])
-            # Get the prediction
-            print(Fore.BLUE + f"🚀\n start predicting {self.model_type} model start..." + Style.RESET_ALL)
             y_pred = self.model.predict(X_pred)
 
             predict_result = (y_pred, abstract_model.get_proba(
                                     y_pred, self.model.predict_proba(X_pred)))
-
-            print(Fore.BLUE + f"🚀\n start predicting {self.model_type} model start..." + Style.RESET_ALL)
-            return predict_result
-
 
         elif self.model_type == RNN or self.model_type == LSTM:
             # Tokenize and pad sequences
@@ -54,8 +51,9 @@ class abstract_model(Generic[M]):
 
             predict_result = abstract_model.get_tuple_highest_probability(self.model.predict(X_pred))
 
-            print(Fore.BLUE + f"🚀\n start predicting {self.model_type} model start..." + Style.RESET_ALL)
-            return predict_result
+
+        print(Fore.BLUE + f"✅\n end predicting {self.model_type} model start..." + Style.RESET_ALL)
+        return predict_result
 
     def get_proba(y_pred, class_probabilities):
             classes = np.array([0, 1])  # Classes: 0 = Real, 1 = Fake
