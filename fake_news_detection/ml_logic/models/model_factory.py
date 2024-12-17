@@ -31,9 +31,7 @@ class model_factory:
 
         if model_factory._base_model is None or model_factory._base_model.model is None:
             print("🚀 start: creating new baseline model...")
-            model = Pipeline([
-                        ("tfidf",TfidfVectorizer()), # convert words to numbers using tfidf
-                        ("clf",MultinomialNB())])    # model the text
+            model = model_factory.create_base_model()    # model the text
             model_factory._base_model = base_model(BASELINE, model)
             print("✅ end: creating new baseline model...")
 
@@ -79,6 +77,11 @@ class model_factory:
         else:
             raise ValueError(f"Unbekannter Modelltyp: {model_type}")
 
+    def create_base_model():
+        return Pipeline([
+                        ("tfidf",TfidfVectorizer()), # convert words to numbers using tfidf
+                        ("clf",MultinomialNB())])
+
     def create_rnn_model():
         # Instantiate the model
         rnn_model = Sequential()
@@ -101,7 +104,6 @@ class model_factory:
 
         return rnn_model
 
-    @staticmethod
     def create_lstm_model():
         # Instantiate the LSTM model
         lstm_model = Sequential()

@@ -46,6 +46,10 @@ async def predict(request: TextRequest):
         y_pred = convert_numpy_types(y_pred)
         probability = convert_numpy_types(probability)
 
+        # In case probability is an array, use its first element
+        if isinstance(probability, (list, np.ndarray)):
+            probability = probability[0]  # Get the first element (adjust this if there are multiple classes)
+
         # Add the result to the response dictionary
         response[model_key] = {
             "prediction": y_pred,
