@@ -7,6 +7,7 @@ from fake_news_detection.ml_logic.registry import load_model
 from keras.models import Sequential
 from sklearn.pipeline import Pipeline
 from fake_news_detection.params import *
+import tensorflow as tf
 
 class model_factory:
     # Statische Instanzen für Modelle
@@ -25,7 +26,7 @@ class model_factory:
         # BASELINE
         if model_factory._base_model is None:
             print("🚀 start: loading baseline model from disk...")
-            model_factory._base_model = base_model(load_model(BASELINE))
+            model_factory._base_model = base_model(BASELINE, load_model(BASELINE))
             print("✅ end: loading baseline model from disk...")
 
         if model_factory._base_model is None or model_factory._base_model.model is None:
@@ -33,27 +34,27 @@ class model_factory:
             model = Pipeline([
                         ("tfidf",TfidfVectorizer()), # convert words to numbers using tfidf
                         ("clf",MultinomialNB())])    # model the text
-            model_factory._base_model = base_model(model)
+            model_factory._base_model = base_model(BASELINE, model)
             print("✅ end: creating new baseline model...")
 
         # RNN
         if model_factory._rnn_model is None:
             print("🚀 start: loading rnn model from disk...")
-            model_factory._rnn_model = rnn_model(load_model(RNN))
+            model_factory._rnn_model = rnn_model(RNN, load_model(RNN))
             print("✅ end: loading rnn model from disk...")
         if model_factory._rnn_model is None or model_factory._rnn_model.model is None:
             print("🚀 start: creating new rnn model ...")
-            model_factory._rnn_model = rnn_model(Sequential())
+            model_factory._rnn_model = rnn_model(RNN, model_factory.create_rnn_model())
             print("✅ end: creating new rnn model...")
 
         # LSTM
         if model_factory._lstm_model is None:
             print("🚀 start: loading lstm model from disk...")
-            model_factory._lstm_model = lstm_model(load_model(LSTM))
+            model_factory._lstm_model = lstm_model(LSTM, load_model(LSTM))
             print("✅ end: loading lstm model from disk...")
         if model_factory._lstm_model is None or model_factory._lstm_model.model is None:
             print("🚀 start: creating new lstm model...")
-            model_factory._lstm_model = lstm_model(Sequential())
+            model_factory._lstm_model = lstm_model(LSTM, model_factory.create_lstm_model())
             print("✅ end: creating new lstm model...")
 
         print("✅ end: initialize all Models...")
@@ -77,6 +78,47 @@ class model_factory:
             return model_factory._lstm_model
         else:
             raise ValueError(f"Unbekannter Modelltyp: {model_type}")
+
+    def create_rnn_model():
+        # Instantiate the model
+        rnn_model = Sequential()
+
+        # Add an embedding layer
+        rnn_model.add(tf.keras.layers.Embedding(input_dim=5000, output_dim=128))
+
+        # Add a simple RNN layer with 128 units
+        rnn_model.add(tf.keras.layers.SimpleRNN(units=128, return_sequences=False))
+
+        # Add dropout layers to prevent overfitting
+        rnn_model.add(tf.keras.layers.Dropout(rate=0.5))
+
+        # Add another dense layer and dropout layer
+        rnn_model.add(tf.keras.layers.Dense(units=64, activation='relu'))
+        rnn_model.add(tf.keras.layers.Dropout(rate=0.5))
+
+        # Add the final dense output layer with sigmoid activation
+        rnn_model.add(tf.keras.layers.Dense(units=1, activation='sigmoid'))
+
+        return rnn_model
+
+    @staticmethod
+    def create_lstm_model():
+        # Instantiate the LSTM model
+        lstm_model = Sequential()
+
+        # Add an embedding layer
+        lstm_model.add(tf.keras.layers.Embedding(input_dim=5000, output_dim=128, input_length=500))
+
+        # Add the LSTM layer
+        lstm_model.add(tf.keras.layers.LSTM(units=128, return_sequences=False))
+
+        # Add a dropout layer to prevent overfitting
+        lstm_model.add(tf.keras.layers.Dropout(rate=0.2))
+
+        # Add the dense output layer
+        lstm_model.add(tf.keras.layers.Dense(units=1, activation='sigmoid'))
+
+        return lstm_model
 
 # Automatisches Initialisieren der Modelle beim Importieren der Klasse
 model_factory.initialize_models()
