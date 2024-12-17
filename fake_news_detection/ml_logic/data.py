@@ -54,7 +54,7 @@ def upload_data_to_bq(
     - Empty the table beforehand if `truncate` is True, append otherwise
     """
     assert isinstance(data, pd.DataFrame)
-    full_table_name = f"{gcp_project}.{bq_dataset}.{table}"
+    full_table_name = f"{GCP_PROJECT}.{BQ_DATASET}.{table}"
     print(Fore.BLUE + f"\nSave data to BigQuery @ {full_table_name}...:" + Style.RESET_ALL)
 
     # Load data into full_table_name
