@@ -16,8 +16,10 @@ docker_interactive:
 	docker run -it --env-file .env ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GAR_REPO}/${GAR_IMAGE}:prod /bin/bash
 
 docker_deploy:
-	gcloud run deploy fake-news-service --image ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GAR_REPO}/${GAR_IMAGE}:prod --memory ${GAR_MEMORY} --region ${GCP_REGION} --port 8000
+	gcloud run deploy fake-news-service --image ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GAR_REPO}/${GAR_IMAGE}:prod --memory ${GAR_MEMORY} --region ${GCP_REGION}
 
 #to start the backend excecute
 run_backend:
 	uvicorn fake_news_detection.api.fast:app --reload
+
+	#to check log on docker: docker ps and docker exec -it 16f5ddc5a23b /bin/bash
