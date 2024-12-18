@@ -4,13 +4,18 @@ from keras.models import Sequential
 from keras.models import Model
 import numpy as np
 import pandas as pd
-
 from colorama import Fore, Style
 from fake_news_detection.ml_logic.preprocessor import basic_cleaning, preprocess_feature
 from fake_news_detection.ml_logic.registry import save_model, save_results
 from fake_news_detection.ml_logic.data import get_processed_data, split_data
 from sklearn.metrics import accuracy_score
 from fake_news_detection.params import *
+
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+
 # Definiere einen Typ, der entweder 'Model' oder 'Sequential' sein kann
 M = TypeVar('M', bound=Union[Model, Sequential])
 

@@ -31,7 +31,7 @@ def preprocess() -> None:
                                 cache_path = df_query_cache_path, data_has_header = True)
 
     # can be used to reduce runing time
-    df = df.head(int(DATA_SIZE))
+    #df = df.head(int(DATA_SIZE))
     print(df.shape)
 
     # cleaning data
