@@ -13,6 +13,7 @@ COPY . /fake_news_detection
 WORKDIR /fake_news_detection
 
 RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords'); nltk.download('wordnet')"
 
 EXPOSE 5000
 
