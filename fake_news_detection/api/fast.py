@@ -36,21 +36,28 @@ async def predict(request: TextRequest):
     response = {}
 
     for model_key in request.models:
-        # Assuming model_factory.getModel(model_key) returns a model instance that has a 'predict' method
-        model = model_factory.getModel(model_key)
-
         # Get the prediction and accuracy
-        y_pred, probability = model.predict(request.text)
+        y_pred, probability = model_factory.getModel(model_key).predict(request.text)
 
-        # Apply conversion to native Python types
+        # Convert to native Python types
         y_pred = convert_numpy_types(y_pred)
         probability = convert_numpy_types(probability)
 
+        # In case probability is an array, use its first element
+        if isinstance(probability, (list, np.ndarray)):
+            probability = probability[0]  # Adjust if needed for multi-class
+
+        # Define label based on y_pred
+        label = "Real News" if y_pred == 1 else "Fake News"
+
         # Add the result to the response dictionary
         response[model_key] = {
-            "prediction": y_pred,
-            "probability": probability if probability is not None else 0  # default probability to 0 if None
+            "label": label,  # Human-readable label
+            "prediction": int(y_pred),  # 0 or 1
+            "probability": probability if probability is not None else 0.0  # Fallback to 0.0 if probability is None
         }
 
+    result = jsonable_encoder(response)
+    print(f"result: {result}")
     # Return the response as JSON-serializable data
-    return jsonable_encoder(response)
+    return result

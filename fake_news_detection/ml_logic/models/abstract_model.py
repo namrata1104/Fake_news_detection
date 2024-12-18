@@ -24,39 +24,93 @@ class abstract_model(Generic[M]):
         """
         Make a prediction using the latest trained model and return the prediction and accuracy.
         """
-        print("\n⭐️ Use case: predict")
+        print(f"\n⭐️ Use case: predict {self.model_type} model")
 
         # Preprocess the input text
         processed_news = preprocess_feature(basic_cleaning(news))
 
+        # Get the prediction
+        print(Fore.BLUE + f"🚀\n start predicting {self.model_type} model start..." + Style.RESET_ALL)
+
         if self.model_type == BASELINE:
             # Convert the processed text into a DataFrame for the model
-             X_pred = pd.DataFrame([processed_news], columns=['text'])
+            X_pred = pd.DataFrame([processed_news], columns=['text'])
+            y_pred = self.model.predict(X_pred)
+
+            predict_proba = self.model.predict_proba(X_pred)
+            predict_result = abstract_model.get_proba(y_pred, predict_proba)
+
+            print(f"predict_result:  {predict_result}")
+
         elif self.model_type == RNN or self.model_type == LSTM:
             # Tokenize and pad sequences
             tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=5000)
-            tokenizer.fit_on_texts(processed_news)
-            X_seq = tokenizer.texts_to_sequences(processed_news)
+            tokenizer.fit_on_texts([processed_news])
+            X_seq = tokenizer.texts_to_sequences([processed_news])
             # Pad sequences to ensure uniform input length
             X_pred = tf.keras.preprocessing.sequence.pad_sequences(X_seq, maxlen=500)
+            # Get the prediction
 
-        # Get the prediction
-        print(Fore.BLUE + f"🚀\n start predicting {self.model_type} model start..." + Style.RESET_ALL)
-        y_pred = self.model.predict(X_pred)
-        #y_pred = (y_pred > 0.5).astype(int)
+            probabilities = self.model.predict(X_pred)[0]  # Assuming batch size = 1
+            predict_result = abstract_model.get_tuple_highest_probability(probabilities)
 
-        # Wahrscheinlichkeitswert für die positive Klasse (z.B. "Fake" oder "True")
-        print(y_pred)
-        if self.model_type == BASELINE:
-            probability = y_pred[0]
-        elif self.model_type == RNN or self.model_type == LSTM:
-            probability = y_pred[0][0]
+            print(f"predict_result:  {predict_result}")
 
-        # Ausgabe der Vorhersagewahrscheinlichkeit
-        print("\n✅ predict done: ", y_pred, y_pred.shape, " | probability: ", probability, "\n")
-        print(Fore.BLUE + f"✅ end predicting {self.model_type}" + Style.RESET_ALL)
+        print(Fore.BLUE + f"✅\n end predicting {self.model_type} model..." + Style.RESET_ALL)
+        return predict_result
 
-        return (y_pred[0], probability)
+    def get_proba(y_pred, class_probabilities):
+        classes = np.array([0, 1])  # Adjusted: 0 = Fake, 1 = Real
+
+        # If y_pred is a Boolean, convert it to 0 or 1
+        if isinstance(y_pred, np.ndarray):
+            y_pred = y_pred.astype(int)
+        elif isinstance(y_pred, list):
+            y_pred = int(y_pred[0])
+
+        # Check if the dimension of the probabilities is 2D (e.g. for multiple models)
+        if class_probabilities.ndim == 2:
+            class_probabilities = class_probabilities[0]
+
+        # Find the index of the maximum probability
+        max_index = class_probabilities.argmax()
+        # Get the predicted class from the maximum index
+        predicted_class = classes[max_index]
+
+        # Maximum probability
+        max_probability = class_probabilities[max_index]
+
+        # Make the prediction understandable
+        label = "Real" if predicted_class == 1 else "Fake"
+
+        # If y_pred = True or False, also check the probability for both classes
+        label_pred = "Real" if y_pred == 1 else "Fake"
+        prob_pred = class_probabilities[1] if y_pred == 1 else class_probabilities[0]
+
+        # Return the result as a tuple (Label, Probability)
+        return y_pred[0], prob_pred
+
+    def get_tuple_highest_probability(probabilities, threshold=0.5):
+        """
+        Returns the tuple with the highest probability:
+        (y_pred, probability)
+        y_pred is True (if probability for the positive class >= threshold),
+        otherwise False.
+
+        :param probabilities: ndarray with the probabilities of the positive class
+        :param threshold: Threshold for classification
+        :return: Tuple (y_pred, probability) with the highest probability
+        """
+        # Find the index of the highest probability
+        max_index = probabilities.argmax()
+        max_probability = probabilities[max_index]
+
+        # Determine y_pred: 1 (Real) if probability >= threshold, otherwise 0 (Fake)
+        y_pred = 1 if max_probability >= threshold else 0
+
+        # Return the tuple
+        return (y_pred, max_probability)
+
 
 
     def train(self, split_ratio: float = 0.03) -> float:
