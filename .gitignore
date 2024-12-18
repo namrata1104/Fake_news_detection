@@ -46,4 +46,4 @@ secrets.toml
 # User defined extras
 # Complete to your desire
 
-nltk_data/
+nltk_data

@@ -4,6 +4,7 @@ FROM python:3.10-slim
 
 COPY nltk_data nltk_data
 COPY data data
+COPY nltk_data nltk_data
 COPY fake_news_detection fake_news_detection
 COPY training_outputs training_outputs
 COPY .env .env
