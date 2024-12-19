@@ -45,8 +45,6 @@ class abstract_model(Generic[M]):
             predict_proba = self.model.predict_proba(X_pred)
             predict_result = abstract_model.get_proba(y_pred, predict_proba)
 
-            print(f"predict_result:  {predict_result}")
-
         elif self.model_type == RNN or self.model_type == LSTM:
             # Tokenize and pad sequences
             tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=5000)
@@ -59,7 +57,8 @@ class abstract_model(Generic[M]):
             probabilities = self.model.predict(X_pred)[0]  # Assuming batch size = 1
             predict_result = abstract_model.get_tuple_highest_probability(probabilities)
 
-            print(f"predict_result:  {predict_result}")
+        formatted_result = (predict_result[0], predict_result[1] * 100)
+        print(f"predict_result:  ({formatted_result[0]}, {formatted_result[1]:.2f}%)")
 
         print(Fore.BLUE + f"✅\n end predicting {self.model_type} model..." + Style.RESET_ALL)
         return predict_result
