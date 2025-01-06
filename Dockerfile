@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-COPY nltk_data nltk_data
+#COPY nltk_data nltk_data
 
 COPY data data
 
@@ -11,7 +11,6 @@ COPY training_outputs training_outputs
 COPY .env .env
 
 COPY requirements.txt requirements.txt
-
 
 COPY . /fake_news_detection
 WORKDIR /fake_news_detection

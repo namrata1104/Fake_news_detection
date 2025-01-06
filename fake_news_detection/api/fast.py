@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
-from fake_news_detection.ml_logic.models.model_factory import model_factory
+from fake_news_detection.domain.models.model_factory import model_factory
 from fastapi.encoders import jsonable_encoder
 import numpy as np
 
